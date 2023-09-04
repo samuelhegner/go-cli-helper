@@ -61,22 +61,16 @@ func run(cmd *cobra.Command, args []string) {
 
 	commandRunner.Run("mkdir", n)
 
+	goHelper.InitGoMod(dir, n)
+
 	if !ng {
 		gitHelper.InitLocalRepository(dir)
+		gitHelper.CreateInitialCommit(dir)
 	}
 
 	if !nr {
 		gitHelper.CreateRemoteRepository(n, dir)
 		gitHelper.LinkRemoteToLocal(constants.GitHubUrl+n, dir)
-	}
-
-	if !ng {
-		gitHelper.CreateInitialCommit(dir)
-	}
-
-	goHelper.InitGoMod(dir, n)
-
-	if !nr {
 		gitHelper.PushLocalFiles(dir)
 	}
 

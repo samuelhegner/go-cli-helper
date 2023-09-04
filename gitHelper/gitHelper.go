@@ -28,6 +28,7 @@ func CreateRemoteRepository(name string, dir string) {
 func LinkRemoteToLocal(remoteUrl string, dir string) {
 	fmt.Println("Linking local and remote repository...")
 	commandRunner.RunInDirectory(dir, "git", "remote", "add", "origin", remoteUrl)
+	commandRunner.RunInDirectory(dir, "git", "branch", "--set-upstream-to=origin/main", "main")
 	commandRunner.RunInDirectory(dir, "git", "pull")
 	fmt.Println("Linked remote repository to local and pulled files")
 }
