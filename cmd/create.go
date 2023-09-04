@@ -4,9 +4,13 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"log"
 	"os"
+	"os/exec"
 
+	"github.com/samuelhegner/go-cli-helper/exec"
 	"github.com/spf13/cobra"
 )
 
@@ -54,10 +58,22 @@ func run(cmd *cobra.Command, args []string) {
 
 	if ng {
 		nr = true
+		fmt.Println(ng, nr)
 	}
 
 	fmt.Println("Creating the Go project:", n)
 
-	fmt.Println(noGitString+":", ng)
-	fmt.Println(noRemoteString+":", nr)
+	command := exec.Command("mkdir", n)
+
+	stderr, _ := command.StderrPipe()
+	if err := command.Start(); err != nil {
+		log.Fatal(err)
+	}
+
+	scanner := bufio.NewScanner(stderr)
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
+	}
+
+	fmt.Println("Created project directory...")
 }
