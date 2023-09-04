@@ -4,13 +4,14 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"bufio"
 	"fmt"
-	"log"
 	"os"
-	"os/exec"
+	"path/filepath"
 
-	"github.com/samuelhegner/go-cli-helper/exec"
+	"github.com/samuelhegner/go-cli-helper/commandRunner"
+	"github.com/samuelhegner/go-cli-helper/constants"
+	"github.com/samuelhegner/go-cli-helper/gitHelper"
+	"github.com/samuelhegner/go-cli-helper/goHelper"
 	"github.com/spf13/cobra"
 )
 
@@ -29,17 +30,6 @@ var createCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(createCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// createCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 	createCmd.Flags().String(nameString, "", "Name of the new project")
 	createCmd.Flags().Bool(noGitString, false, "Do not initiate a git repository")
 	createCmd.Flags().Bool(noRemoteString, false, "Do not create a remote repository on GitHub")
@@ -51,6 +41,12 @@ func run(cmd *cobra.Command, args []string) {
 	ng, _ := cmd.Flags().GetBool(noGitString)
 	nr, _ := cmd.Flags().GetBool(noRemoteString)
 
+	wd, _ := os.Getwd()
+
+	dir := filepath.Join(wd, n)
+
+	fmt.Println(dir)
+
 	if n == "" {
 		fmt.Println("Provide a project name using --name flag")
 		os.Exit(1)
@@ -61,19 +57,28 @@ func run(cmd *cobra.Command, args []string) {
 		fmt.Println(ng, nr)
 	}
 
-	fmt.Println("Creating the Go project:", n)
+	fmt.Println("Creating the Go project:", n, "...")
 
-	command := exec.Command("mkdir", n)
+	commandRunner.Run("mkdir", n)
 
-	stderr, _ := command.StderrPipe()
-	if err := command.Start(); err != nil {
-		log.Fatal(err)
+	if !ng {
+		gitHelper.InitLocalRepository(dir)
 	}
 
-	scanner := bufio.NewScanner(stderr)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+	if !nr {
+		gitHelper.CreateRemoteRepository(n, dir)
+		gitHelper.LinkRemoteToLocal(constants.GitHubUrl+n, dir)
 	}
 
-	fmt.Println("Created project directory...")
+	if !ng {
+		gitHelper.CreateInitialCommit(dir)
+	}
+
+	goHelper.InitGoMod(dir, n)
+
+	if !nr {
+		gitHelper.PushLocalFiles(dir)
+	}
+
+	fmt.Println("Created project directory")
 }
