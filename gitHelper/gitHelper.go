@@ -45,3 +45,7 @@ func PushLocalFiles(dir string) {
 	commandRunner.RunInDirectory(dir, "git", "push")
 	fmt.Println("Pushed local changes to remote")
 }
+
+func RemoteExists(name string) (bool, error) {
+
+}

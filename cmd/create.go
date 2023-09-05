@@ -5,11 +5,13 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/samuelhegner/go-cli-helper/commandRunner"
 	"github.com/samuelhegner/go-cli-helper/constants"
+	"github.com/samuelhegner/go-cli-helper/dirHelper"
 	"github.com/samuelhegner/go-cli-helper/gitHelper"
 	"github.com/samuelhegner/go-cli-helper/goHelper"
 	"github.com/spf13/cobra"
@@ -40,12 +42,14 @@ func run(cmd *cobra.Command, args []string) {
 	n, _ := cmd.Flags().GetString(nameString)
 	ng, _ := cmd.Flags().GetBool(noGitString)
 	nr, _ := cmd.Flags().GetBool(noRemoteString)
-
 	wd, _ := os.Getwd()
-
 	dir := filepath.Join(wd, n)
 
-	fmt.Println(dir)
+	earlyStop, err := dirHelper.Exists(dir)
+
+	if earlyStop || err != nil {
+		log.Fatal("Directory already exists or error occurred checking")
+	}
 
 	if n == "" {
 		fmt.Println("Provide a project name using --name flag")
