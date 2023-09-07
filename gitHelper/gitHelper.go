@@ -14,15 +14,31 @@ func InitLocalRepository(dir string) {
 	log.Println("Initialised local repository")
 }
 
+const (
+	ignore = `*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work`
+)
+
 func CreateIgnoreFile(dir string) {
 	ig := filepath.Join(dir, ".gitignore")
-	file, err := os.Create(ig)
+
+	err := os.WriteFile(ig, []byte(ignore), 0777)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 var defaultRemoteCreateFlags = []string{
-	"--add-readme",
 	"--public",
-	"-g=Go",
+	"--push",
+	"-s=.",
 }
 
 func CreateRemoteRepository(name string, dir string) {

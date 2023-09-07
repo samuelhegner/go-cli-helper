@@ -8,8 +8,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/samuelhegner/go-cli-helper/commandRunner"
 	"github.com/samuelhegner/go-cli-helper/dirHelper"
 	"github.com/samuelhegner/go-cli-helper/gitHelper"
+	"github.com/samuelhegner/go-cli-helper/goHelper"
 	"github.com/spf13/cobra"
 )
 
@@ -67,20 +69,19 @@ func run(cmd *cobra.Command, args []string) {
 
 	log.Println("Creating the Go project:", n, "...")
 
-	// commandRunner.Run("mkdir", n)
+	commandRunner.Run("mkdir", n)
 
-	// goHelper.InitGoMod(dir, n)
+	goHelper.InitGoMod(dir, n)
 
-	// if !ng {
-	// 	gitHelper.InitLocalRepository(dir)
-	// 	gitHelper.CreateInitialCommit(dir)
-	// }
+	if !ng {
+		gitHelper.InitLocalRepository(dir)
+		gitHelper.CreateIgnoreFile(dir)
+		gitHelper.CreateInitialCommit(dir)
+	}
 
-	// if !nr {
-	// 	gitHelper.CreateRemoteRepository(n, dir)
-	// 	gitHelper.LinkRemoteToLocal(constants.GitHubUrl+n, dir)
-	// 	gitHelper.PushLocalFiles(dir)
-	// }
+	if !nr {
+		gitHelper.CreateRemoteRepository(n, dir)
+	}
 
-	log.Println("Created project directory")
+	log.Println("Created project", n)
 }
