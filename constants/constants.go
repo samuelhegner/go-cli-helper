@@ -1,4 +1,6 @@
 package constants
 
-var GitHubUrl = "https://github.com/samuelhegner/"
-var GoPackageRoot = "github.com/samuelhegner/"
+const (
+	GitHubUrl     = "https://github.com/samuelhegner/"
+	GoPackageRoot = "github.com/samuelhegner/"
+)

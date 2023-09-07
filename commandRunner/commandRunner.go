@@ -9,13 +9,18 @@ import (
 
 func Run(cmdStr string, arg ...string) {
 
-	fmt.Println("Running command:", cmdStr, arg)
+	log.Println("Running command:", cmdStr, arg)
 	cmd := exec.Command(cmdStr, arg...)
 	execCmd(cmd)
 }
 
+func RunWithError(cmdStr string, arg ...string) error {
+	cmd := exec.Command(cmdStr, arg...)
+	return execCmdWithErrorReturn(cmd)
+}
+
 func RunInDirectory(dir string, cmdStr string, arg ...string) {
-	fmt.Println("Running command:", cmdStr, arg, "In directory:", dir)
+	log.Println("Running command:", cmdStr, arg, "In directory:", dir)
 
 	cmd := exec.Command(cmdStr, arg...)
 
@@ -40,4 +45,22 @@ func execCmd(cmd *exec.Cmd) {
 	if err := cmd.Wait(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func execCmdWithErrorReturn(cmd *exec.Cmd) error {
+	_, err := cmd.StderrPipe()
+
+	if err != nil {
+		return err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
+
+	return nil
 }

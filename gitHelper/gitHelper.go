@@ -1,15 +1,22 @@
 package gitHelper
 
 import (
-	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/samuelhegner/go-cli-helper/commandRunner"
 )
 
 func InitLocalRepository(dir string) {
-	fmt.Println("Initialising local repository...")
+	log.Println("Initialising local repository...")
 	commandRunner.RunInDirectory(dir, "git", "init")
-	fmt.Println("Initialised local repository")
+	log.Println("Initialised local repository")
+}
+
+func CreateIgnoreFile(dir string) {
+	ig := filepath.Join(dir, ".gitignore")
+	file, err := os.Create(ig)
 }
 
 var defaultRemoteCreateFlags = []string{
@@ -19,33 +26,38 @@ var defaultRemoteCreateFlags = []string{
 }
 
 func CreateRemoteRepository(name string, dir string) {
-	fmt.Println("Creating remote Repository:", name)
+	log.Println("Creating remote Repository:", name)
 	args := append([]string{"repo", "create", name}, defaultRemoteCreateFlags...)
 	commandRunner.RunInDirectory(dir, "gh", args...)
-	fmt.Println("Created remote repository")
+	log.Println("Created remote repository")
 }
 
 func LinkRemoteToLocal(remoteUrl string, dir string) {
-	fmt.Println("Linking local and remote repository...")
+	log.Println("Linking local and remote repository...")
 	commandRunner.RunInDirectory(dir, "git", "remote", "add", "origin", remoteUrl)
 	commandRunner.RunInDirectory(dir, "git", "branch", "--set-upstream-to=origin/main", "main")
 	commandRunner.RunInDirectory(dir, "git", "pull")
-	fmt.Println("Linked remote repository to local and pulled files")
+	log.Println("Linked remote repository to local and pulled files")
 }
 
 func CreateInitialCommit(dir string) {
-	fmt.Println("Creating initial commit...")
+	log.Println("Creating initial commit...")
 	commandRunner.RunInDirectory(dir, "git", "add", ".")
 	commandRunner.RunInDirectory(dir, "git", "commit", "-m", "\"Initial Commit\"")
-	fmt.Println("Created initial commit")
+	log.Println("Created initial commit")
 }
 
 func PushLocalFiles(dir string) {
-	fmt.Println("Pushing local changes to remote...")
+	log.Println("Pushing local changes to remote...")
 	commandRunner.RunInDirectory(dir, "git", "push")
-	fmt.Println("Pushed local changes to remote")
+	log.Println("Pushed local changes to remote")
 }
 
 func RemoteExists(name string) (bool, error) {
+	err := commandRunner.RunWithError("gh", "repo", "view", name)
+	if err != nil {
+		return false, nil
+	}
 
+	return true, nil
 }

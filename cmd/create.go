@@ -4,16 +4,12 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
-	"github.com/samuelhegner/go-cli-helper/commandRunner"
-	"github.com/samuelhegner/go-cli-helper/constants"
 	"github.com/samuelhegner/go-cli-helper/dirHelper"
 	"github.com/samuelhegner/go-cli-helper/gitHelper"
-	"github.com/samuelhegner/go-cli-helper/goHelper"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +28,7 @@ var createCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(createCmd)
-	createCmd.Flags().String(nameString, "", "Name of the new project")
+	createCmd.Flags().StringP(nameString, "n", "", "Name of the new project")
 	createCmd.Flags().Bool(noGitString, false, "Do not initiate a git repository")
 	createCmd.Flags().Bool(noRemoteString, false, "Do not create a remote repository on GitHub")
 }
@@ -45,38 +41,46 @@ func run(cmd *cobra.Command, args []string) {
 	wd, _ := os.Getwd()
 	dir := filepath.Join(wd, n)
 
+	if n == "" {
+		log.Println("Provide a project name using -n flag")
+		os.Exit(1)
+	}
+
 	earlyStop, err := dirHelper.Exists(dir)
 
 	if earlyStop || err != nil {
 		log.Fatal("Directory already exists or error occurred checking")
 	}
 
-	if n == "" {
-		fmt.Println("Provide a project name using --name flag")
-		os.Exit(1)
+	if !nr {
+		earlyStop, err = gitHelper.RemoteExists(n)
+
+		if earlyStop || err != nil {
+			log.Fatal("Remote repository already exists or error occurred checking")
+		}
 	}
 
 	if ng {
 		nr = true
-		fmt.Println(ng, nr)
+		log.Println(ng, nr)
 	}
 
-	fmt.Println("Creating the Go project:", n, "...")
+	log.Println("Creating the Go project:", n, "...")
 
-	commandRunner.Run("mkdir", n)
+	// commandRunner.Run("mkdir", n)
 
-	goHelper.InitGoMod(dir, n)
+	// goHelper.InitGoMod(dir, n)
 
-	if !ng {
-		gitHelper.InitLocalRepository(dir)
-		gitHelper.CreateInitialCommit(dir)
-	}
+	// if !ng {
+	// 	gitHelper.InitLocalRepository(dir)
+	// 	gitHelper.CreateInitialCommit(dir)
+	// }
 
-	if !nr {
-		gitHelper.CreateRemoteRepository(n, dir)
-		gitHelper.LinkRemoteToLocal(constants.GitHubUrl+n, dir)
-		gitHelper.PushLocalFiles(dir)
-	}
+	// if !nr {
+	// 	gitHelper.CreateRemoteRepository(n, dir)
+	// 	gitHelper.LinkRemoteToLocal(constants.GitHubUrl+n, dir)
+	// 	gitHelper.PushLocalFiles(dir)
+	// }
 
-	fmt.Println("Created project directory")
+	log.Println("Created project directory")
 }
